@@ -6,8 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.core.database import Base, get_db
 
-# Base de données de test en mémoire
-SQLALCHEMY_TEST_URL = "sqlite:///./test.db"
+SQLALCHEMY_TEST_URL = "sqlite:///./test_temp.db"
 engine = create_engine(SQLALCHEMY_TEST_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -21,7 +20,14 @@ def override_get_db():
 
 
 app.dependency_overrides[get_db] = override_get_db
-Base.metadata.create_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def reset_db():
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    yield
+
 
 client = TestClient(app)
 
@@ -67,8 +73,13 @@ def test_login_success():
 
 
 def test_login_wrong_password():
+    client.post("/auth/register", json={
+        "email": "login2@mmotors.fr",
+        "password": "Test123!",
+        "full_name": "Login User"
+    })
     response = client.post("/auth/login", json={
-        "email": "login@mmotors.fr",
+        "email": "login2@mmotors.fr",
         "password": "WrongPass!"
     })
     assert response.status_code == 401
