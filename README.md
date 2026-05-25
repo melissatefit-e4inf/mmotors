@@ -1,4 +1,4 @@
-# M-Motors — Bloc 3
+# M-Motors -   BLOC 3
 
 Application web de gestion de véhicules d'occasion et location longue durée (LLD).
 
@@ -9,6 +9,6 @@ Application web de gestion de véhicules d'occasion et location longue durée (L
 - Déploiement : Docker + Railway
 
 ## Structure
-- `backend/` — API FastAPI
-- `frontend/` — Interface React
-- `docs/` — Documentation technique
+- `backend/` - API FastAPI
+- `frontend/` - Interface React
+- `docs/` - Documentation technique
