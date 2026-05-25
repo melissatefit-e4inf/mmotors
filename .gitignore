@@ -21,3 +21,5 @@ build/
 # Exports
 exports/
 *.pdf
+*.db
+test_temp.db
