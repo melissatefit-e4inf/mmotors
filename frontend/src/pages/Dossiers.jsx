@@ -1,546 +1,145 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import API from "../api/client";
+import { useNavigate } from "react-router-dom";
 
-const CAR_PLACEHOLDER = (label) =>
-  `https://via.placeholder.com/80x55/ddd/888?text=${encodeURIComponent(label)}`;
+const statusConfig = {
+  pending:   { label: "En attente",  color: "#D97706", bg: "#FFF7ED" },
+  validated: { label: "Validé",      color: "#16A34A", bg: "#F0FDF4" },
+  refused:   { label: "Refusé",      color: "#DC2626", bg: "#FEF2F2" },
+};
 
-const MOCK_VEHICLES = [
-  { id: 1, brand: "VW",      model: "Golf",  price: 150, vehicle_type: "sale",   rental_price: 20,  mileage: 18000 },
-  { id: 2, brand: "Toyota",  model: "RAV4",  price: 200, vehicle_type: "sale",   rental_price: 370, mileage: 8000  },
-  { id: 3, brand: "Renault", model: "Clio",  price: 280, vehicle_type: "rental", rental_price: 870, mileage: 3000  },
-  { id: 4, brand: "Renault", model: "Clio",  price: 500, vehicle_type: "rental", rental_price: 170, mileage: 5000  },
-];
+const typeLabel = {
+  purchase: "Achat",
+  rental:   "Location longue durée",
+};
 
-/* ─── Sidebar ─── */
-function Sidebar({ active }) {
-  const items = [
-    { label: "Tableau de Bord", icon: "🎨", href: "/admin" },
-    { label: "Dossiers",        icon: "📁", href: "/dossiers" },
-    { label: "Configuration",   icon: "⚙️",  href: "/config" },
-  ];
-  return (
-    <aside style={styles.sidebar}>
-      {items.map(({ label, icon, href }) => (
-        <Link
-          key={label}
-          to={href}
-          style={{
-            ...styles.sidebarItem,
-            background: active === label ? "#e8f5e9" : "transparent",
-            fontWeight: active === label ? "700" : "500",
-          }}
-        >
-          <span style={{ marginRight: "10px" }}>{icon}</span>
-          {label}
-        </Link>
-      ))}
-    </aside>
-  );
-}
-
-/* ─── Main component ─── */
 export default function Dossiers() {
-  const [vehicles, setVehicles] = useState([]);
-  const [search, setSearch] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const [dossiers, setDossiers] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    API.get("/vehicles/")
-      .then((res) => setVehicles(res.data))
-      .catch(() => setVehicles(MOCK_VEHICLES));
+    if (!token) return;
+    API.get("/dossiers/")
+      .then((res) => setDossiers(res.data))
+      .catch(() => setError("Impossible de charger vos dossiers."))
+      .finally(() => setLoading(false));
   }, []);
 
-  const filtered = vehicles.filter((v) => {
-    const q = search.toLowerCase();
+  if (!token) {
     return (
-      !q ||
-      v.brand?.toLowerCase().includes(q) ||
-      v.model?.toLowerCase().includes(q)
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h2>Connexion requise</h2>
+          <p>Vous devez être connecté pour accéder à vos dossiers.</p>
+          <button style={styles.btnPrimary} onClick={() => navigate("/login")}>
+            Se connecter
+          </button>
+        </div>
+      </div>
     );
-  });
-
-  const totalSale   = vehicles.filter((v) => v.vehicle_type === "sale").length;
-  const totalRental = vehicles.filter((v) => v.vehicle_type === "rental").length;
-
-  const handleDelete = (id) => {
-    if (!window.confirm("Supprimer ce véhicule ?")) return;
-    API.delete(`/vehicles/${id}/`)
-      .catch(() => {})
-      .finally(() => setVehicles((prev) => prev.filter((v) => v.id !== id)));
-  };
-
-  const startEdit = (v) => {
-    setEditingId(v.id);
-    setEditForm({ ...v });
-  };
-
-  const saveEdit = () => {
-    API.put(`/vehicles/${editingId}/`, editForm)
-      .catch(() => {})
-      .finally(() => {
-        setVehicles((prev) =>
-          prev.map((v) => (v.id === editingId ? { ...editForm } : v))
-        );
-        setEditingId(null);
-      });
-  };
+  }
 
   return (
-    <div style={styles.layout}>
-      <Sidebar active="Tableau de Bord" />
+    <div style={styles.page}>
+      <div style={styles.header}>
+        <h2 style={styles.title}>Mes dossiers</h2>
+        <button style={styles.btnSecondary} onClick={() => navigate("/vehicles")}>
+          Nouveau dossier
+        </button>
+      </div>
 
-      <main style={styles.main}>
-        {/* Title + decor */}
-        <div style={styles.titleRow}>
-          <h1 style={styles.title}>Gestion de la Flotte Véhicules</h1>
-          <div style={styles.decorCircle} />
-        </div>
+      {loading && <p style={styles.info}>Chargement…</p>}
+      {error   && <p style={styles.error}>{error}</p>}
 
-        {/* Info panel */}
-        <div style={styles.infoPanel}>
-          <p style={styles.infoPanelTitle}>Attentes de l'exercice :</p>
-          <ul style={styles.infoPanelList}>
-            {[
-              "Achat/Location",
-              "Inscription dématérialisée",
-              "Suivi de dossier",
-              "Gestion Back-office",
-              "Cloud",
-              "Logs/Alerte",
-            ].map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Toolbar */}
-        <div style={styles.toolbar}>
-          <button
-            style={styles.addBtn}
-            onClick={() => navigate("/vehicles/new")}
-          >
-            + &nbsp;Ajouter un Véhicule
+      {!loading && dossiers.length === 0 && (
+        <div style={styles.empty}>
+          <p style={{ color: "#64748B", marginBottom: "16px" }}>
+            Vous n'avez pas encore de dossier.
+          </p>
+          <button style={styles.btnPrimary} onClick={() => navigate("/vehicles")}>
+            Parcourir le catalogue
           </button>
-          <div style={styles.searchBox}>
-            <span style={styles.searchIcon}>🔍</span>
-            <input
-              placeholder="Rechercher"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={styles.searchInput}
-            />
-          </div>
         </div>
+      )}
 
-        {/* Table */}
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                {["Image","ID","Marque","Modèle","Prix/Mois (Achat)","Type Offre","Action","Statut Offre"].map(
-                  (h) => (
-                    <th key={h} style={styles.th}>
-                      {h}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((v) => (
-                <tr key={v.id} style={styles.tr}>
-                  {/* Image */}
-                  <td style={styles.td}>
-                    <img
-                      src={v.image || CAR_PLACEHOLDER(`${v.brand}`)}
-                      alt={v.model}
-                      style={styles.carImg}
-                      onError={(e) => {
-                        e.target.src = CAR_PLACEHOLDER(v.brand);
-                      }}
-                    />
-                  </td>
+      <div style={styles.list}>
+        {dossiers.map((d) => {
+          const status = statusConfig[d.status] || statusConfig.pending;
+          return (
+            <div key={d.id} style={styles.dossierCard}>
+              <div style={styles.dossierTop}>
+                <div>
+                  <div style={styles.dossierTitle}>
+                    Dossier #{d.id} — {typeLabel[d.dossier_type] || d.dossier_type}
+                  </div>
+                  <div style={styles.dossierMeta}>
+                    Véhicule #{d.vehicle_id}
+                  </div>
+                  {d.notes && (
+                    <div style={styles.dossierNotes}>"{d.notes}"</div>
+                  )}
+                </div>
+                <div style={{
+                  ...styles.statusBadge,
+                  color: status.color,
+                  background: status.bg,
+                }}>
+                  {status.label}
+                </div>
+              </div>
 
-                  {/* ID */}
-                  <td style={styles.td}>{v.id}</td>
-
-                  {/* Marque */}
-                  <td style={styles.td}>
-                    {editingId === v.id ? (
-                      <input
-                        value={editForm.brand}
-                        onChange={(e) =>
-                          setEditForm((p) => ({ ...p, brand: e.target.value }))
-                        }
-                        style={styles.editInput}
-                      />
-                    ) : (
-                      v.brand
-                    )}
-                  </td>
-
-                  {/* Modèle */}
-                  <td style={styles.td}>
-                    {editingId === v.id ? (
-                      <input
-                        value={editForm.model}
-                        onChange={(e) =>
-                          setEditForm((p) => ({ ...p, model: e.target.value }))
-                        }
-                        style={styles.editInput}
-                      />
-                    ) : (
-                      v.model
-                    )}
-                  </td>
-
-                  {/* Prix */}
-                  <td style={styles.td}>
-                    {editingId === v.id ? (
-                      <input
-                        type="number"
-                        value={editForm.price}
-                        onChange={(e) =>
-                          setEditForm((p) => ({ ...p, price: e.target.value }))
-                        }
-                        style={{ ...styles.editInput, width: "80px" }}
-                      />
-                    ) : (
-                      `€ ${v.price}€`
-                    )}
-                  </td>
-
-                  {/* Type offre */}
-                  <td style={styles.td}>
-                    {v.vehicle_type === "sale" ? "Achat" : "Location"}
-                  </td>
-
-                  {/* Actions */}
-                  <td style={styles.td}>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      {editingId === v.id ? (
-                        <>
-                          <button style={styles.saveBtn} onClick={saveEdit}>
-                            ✓
-                          </button>
-                          <button
-                            style={styles.cancelBtn}
-                            onClick={() => setEditingId(null)}
-                          >
-                            ✕
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            style={styles.iconBtn}
-                            onClick={() => startEdit(v)}
-                            title="Modifier"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            style={styles.iconBtnDanger}
-                            onClick={() => handleDelete(v.id)}
-                            title="Supprimer"
-                          >
-                            🗑️
-                          </button>
-                        </>
-                      )}
+              <div style={styles.timeline}>
+                {["pending", "validated"].map((step, i) => {
+                  const steps = ["pending", "validated", "refused"];
+                  const currentIdx = steps.indexOf(d.status);
+                  const active = i <= (d.status === "refused" ? 0 : currentIdx);
+                  return (
+                    <div key={step} style={styles.timelineStep}>
+                      <div style={{
+                        ...styles.timelineDot,
+                        background: active ? "#1D4ED8" : "#E2E8F0",
+                      }} />
+                      <div style={{
+                        ...styles.timelineLabel,
+                        color: active ? "#1D4ED8" : "#94A3B8",
+                        fontWeight: active ? "600" : "400",
+                      }}>
+                        {step === "pending" ? "Déposé" : "Traité"}
+                      </div>
                     </div>
-                  </td>
-
-                  {/* Statut offre */}
-                  <td style={styles.td}>
-                    <div style={styles.statutCell}>
-                      <span style={styles.statutText}>
-                        {v.vehicle_type === "sale" ? "Achat" : "Location"}
-                        <br />
-                        <span style={styles.statutSub}>
-                          {v.rental_price
-                            ? `$${v.rental_price} Mois`
-                            : "—"}
-                        </span>
-                      </span>
-                      <button style={styles.statutEdit}>✏️</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Footer count */}
-        <p style={styles.footerCount}>
-          Total Véhicules : {vehicles.length} | {totalSale} Achat |{" "}
-          {totalRental} Location
-        </p>
-
-        {/* Featured section */}
-        <h2 style={styles.featuredTitle}>
-          LES VÉHICULES DU MOMENT CHEZ M-MOTORS
-        </h2>
-      </main>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-/* ─────────────────── Styles ─────────────────── */
 const styles = {
-  layout: {
-    display: "flex",
-    minHeight: "100vh",
-    backgroundColor: "#f0f0f0",
-    fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
-  },
-
-  /* Sidebar */
-  sidebar: {
-    width: "200px",
-    flexShrink: 0,
-    backgroundColor: "#f8f8f8",
-    borderRight: "1px solid #ddd",
-    padding: "24px 0",
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  sidebarItem: {
-    display: "flex",
-    alignItems: "center",
-    padding: "12px 20px",
-    color: "#222",
-    textDecoration: "none",
-    fontSize: "14px",
-    borderRadius: "0 24px 24px 0",
-    marginRight: "12px",
-    transition: "background 0.15s",
-  },
-
-  /* Main */
-  main: {
-    flex: 1,
-    padding: "32px 40px",
-    position: "relative",
-  },
-
-  titleRow: {
-    position: "relative",
-    marginBottom: "16px",
-  },
-  title: {
-    fontSize: "26px",
-    fontWeight: "800",
-    color: "#111",
-    textAlign: "center",
-  },
-  decorCircle: {
-    position: "absolute",
-    top: "-20px",
-    right: "80px",
-    width: "130px",
-    height: "130px",
-    borderRadius: "50%",
-    border: "22px solid rgba(0,0,0,0.06)",
-    pointerEvents: "none",
-  },
-
-  /* Info panel */
-  infoPanel: {
-    position: "absolute",
-    top: "32px",
-    right: "40px",
-    border: "2px solid #2ecc71",
-    borderRadius: "8px",
-    padding: "14px 18px",
-    backgroundColor: "#fff",
-    maxWidth: "240px",
-    zIndex: 10,
-  },
-  infoPanelTitle: {
-    fontWeight: "800",
-    fontSize: "14px",
-    marginBottom: "6px",
-    color: "#111",
-  },
-  infoPanelList: {
-    margin: 0,
-    paddingLeft: "16px",
-    fontSize: "13px",
-    color: "#222",
-    lineHeight: "1.8",
-  },
-
-  /* Toolbar */
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    marginBottom: "16px",
-    marginTop: "8px",
-  },
-  addBtn: {
-    padding: "12px 22px",
-    background: "#2563EB",
-    color: "#fff",
-    border: "2px solid #1d4ed8",
-    borderRadius: "8px",
-    fontWeight: "700",
-    fontSize: "14px",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  },
-  searchBox: {
-    display: "flex",
-    alignItems: "center",
-    border: "1.5px solid #ccc",
-    borderRadius: "8px",
-    background: "#fff",
-    padding: "10px 14px",
-    gap: "8px",
-    flex: 1,
-    maxWidth: "340px",
-  },
-  searchIcon: { fontSize: "14px", color: "#888" },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    fontSize: "14px",
-    color: "#333",
-    width: "100%",
-    fontFamily: "inherit",
-  },
-
-  /* Table */
-  tableWrapper: {
-    background: "#fff",
-    borderRadius: "12px",
-    overflow: "hidden",
-    border: "1px solid #ddd",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: "14px",
-  },
-  th: {
-    padding: "14px 12px",
-    textAlign: "left",
-    fontWeight: "700",
-    color: "#111",
-    borderBottom: "2px solid #eee",
-    backgroundColor: "#fafafa",
-    whiteSpace: "nowrap",
-  },
-  tr: {
-    borderBottom: "1px solid #eee",
-    transition: "background 0.15s",
-  },
-  td: {
-    padding: "10px 12px",
-    color: "#333",
-    verticalAlign: "middle",
-  },
-  carImg: {
-    width: "80px",
-    height: "55px",
-    objectFit: "cover",
-    borderRadius: "6px",
-    backgroundColor: "#eee",
-  },
-
-  /* Edit inline */
-  editInput: {
-    border: "1.5px solid #2563EB",
-    borderRadius: "6px",
-    padding: "6px 8px",
-    fontSize: "13px",
-    outline: "none",
-    width: "100px",
-    fontFamily: "inherit",
-  },
-
-  /* Action buttons */
-  iconBtn: {
-    background: "#f0f0f0",
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 10px",
-    cursor: "pointer",
-    fontSize: "15px",
-  },
-  iconBtnDanger: {
-    background: "#f0f0f0",
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 10px",
-    cursor: "pointer",
-    fontSize: "15px",
-  },
-  saveBtn: {
-    background: "#22c55e",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 12px",
-    cursor: "pointer",
-    fontWeight: "700",
-    fontSize: "14px",
-  },
-  cancelBtn: {
-    background: "#ef4444",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 12px",
-    cursor: "pointer",
-    fontWeight: "700",
-    fontSize: "14px",
-  },
-
-  /* Statut offre */
-  statutCell: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  statutText: {
-    fontSize: "13px",
-    color: "#222",
-    lineHeight: "1.4",
-  },
-  statutSub: {
-    fontSize: "12px",
-    color: "#666",
-  },
-  statutEdit: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "13px",
-    color: "#888",
-  },
-
-  /* Footer */
-  footerCount: {
-    textAlign: "center",
-    fontSize: "13px",
-    color: "#555",
-    margin: "16px 0 32px",
-  },
-
-  featuredTitle: {
-    textAlign: "center",
-    fontWeight: "800",
-    fontSize: "20px",
-    letterSpacing: "1px",
-    color: "#111",
-    textTransform: "uppercase",
-  },
+  page: { backgroundColor: "#f0f0f0", minHeight: "100vh", padding: "32px 24px", fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif" },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "720px", margin: "0 auto 24px" },
+  title: { fontSize: "22px", fontWeight: "800", color: "#111", margin: 0 },
+  list: { maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" },
+  dossierCard: { background: "#fff", borderRadius: "12px", padding: "20px 24px", boxShadow: "0 1px 6px rgba(0,0,0,0.06)", border: "1px solid #E2E8F0" },
+  dossierTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" },
+  dossierTitle: { fontWeight: "700", fontSize: "16px", color: "#111" },
+  dossierMeta: { fontSize: "13px", color: "#64748B", marginTop: "4px" },
+  dossierNotes: { fontSize: "12px", color: "#94A3B8", marginTop: "6px", fontStyle: "italic" },
+  statusBadge: { padding: "4px 12px", borderRadius: "20px", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap" },
+  timeline: { display: "flex", gap: "32px", paddingTop: "12px", borderTop: "1px solid #F1F5F9" },
+  timelineStep: { display: "flex", alignItems: "center", gap: "8px" },
+  timelineDot: { width: "10px", height: "10px", borderRadius: "50%", flexShrink: 0 },
+  timelineLabel: { fontSize: "12px" },
+  card: { background: "#fff", borderRadius: "12px", padding: "32px", maxWidth: "480px", margin: "80px auto", textAlign: "center" },
+  empty: { background: "#fff", borderRadius: "12px", padding: "40px", maxWidth: "720px", margin: "0 auto", textAlign: "center" },
+  info: { textAlign: "center", color: "#888" },
+  error: { textAlign: "center", color: "#DC2626" },
+  btnPrimary: { padding: "10px 24px", background: "#111", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "600", fontSize: "14px", cursor: "pointer" },
+  btnSecondary: { padding: "8px 20px", background: "#fff", color: "#111", border: "2px solid #111", borderRadius: "6px", fontWeight: "600", fontSize: "14px", cursor: "pointer" },
 };
