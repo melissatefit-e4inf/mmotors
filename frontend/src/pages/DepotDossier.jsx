@@ -131,7 +131,7 @@ export default function DepotDossier() {
             <label style={styles.label}>Documents justificatifs</label>
             <div style={styles.uploadZone}>
               <p style={{ color: "#64748B", margin: 0 }}>
-                📎 Upload de documents — disponible prochainement
+                📎 Upload de documents - disponible prochainement
               </p>
               <p style={{ color: "#94A3B8", fontSize: "12px", margin: "4px 0 0" }}>
                 Permis de conduire, justificatif de revenus, pièce d'identité

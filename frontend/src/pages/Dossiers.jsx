@@ -73,7 +73,7 @@ export default function Dossiers() {
               <div style={styles.dossierTop}>
                 <div>
                   <div style={styles.dossierTitle}>
-                    Dossier #{d.id} — {typeLabel[d.dossier_type] || d.dossier_type}
+                    Dossier #{d.id} - {typeLabel[d.dossier_type] || d.dossier_type}
                   </div>
                   <div style={styles.dossierMeta}>
                     Véhicule #{d.vehicle_id}
