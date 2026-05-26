@@ -7,7 +7,6 @@ const CAR_PLACEHOLDER = (brand) =>
 function VehicleCard({ v }) {
   const isRental = v.vehicle_type === "rental";
   const isSale = v.vehicle_type === "sale";
-  
 
   return (
     <div style={styles.card}>
@@ -22,50 +21,33 @@ function VehicleCard({ v }) {
         />
       </div>
       <div style={styles.cardBody}>
-        <div style={styles.cardTitle}>
-          {v.brand} {v.model}
-        </div>
+        <div style={styles.cardTitle}>{v.brand} {v.model}</div>
         <div style={styles.cardPrices}>
-            {v.vehicle_type === 'sale' ? (
-                <span style={styles.priceTag}>€{Number(v.price).toLocaleString('fr-FR')}</span>
-            ) : (
-                <span style={styles.priceTag}>€{v.price}/jour</span>
-            )}
-            </div>
+          {isSale ? (
+            <span style={styles.priceTag}>€{Number(v.price).toLocaleString("fr-FR")}</span>
+          ) : (
+            <span style={styles.priceTag}>€{v.price}/jour</span>
+          )}
+        </div>
         <div style={styles.cardMeta}>
           {v.year && <span>{v.year}</span>}
-          {v.mileage && (
-            <span> | {Number(v.mileage).toLocaleString("fr-FR")} km</span>
-          )}
+          {v.mileage && <span> | {Number(v.mileage).toLocaleString("fr-FR")} km</span>}
         </div>
+        {v.description && (
+          <div style={styles.cardDesc}>{v.description}</div>
+        )}
         <div style={styles.cardActions}>
-          {(isSale || !v.vehicle_type) && (
-            <button style={styles.btnBuy}>Acheter</button>
-          )}
-          {(isRental || !v.vehicle_type) && (
-            <button style={styles.btnRent}>Louer</button>
-          )}
+          {isSale && <button style={styles.btnBuy}>Acheter</button>}
+          {isRental && <button style={styles.btnRent}>Louer</button>}
         </div>
       </div>
     </div>
   );
 }
 
-// ---------- mock data so the page renders without a backend ----------
-const MOCK_VEHICLES = [
-  { id: 1, brand: "VW", model: "Golf", year: 2022, mileage: 18000, price: 18500, rental_price: 299, vehicle_type: "sale" },
-  { id: 2, brand: "Toyota", model: "RAV4", year: 2023, mileage: 8000, price: 28500, rental_price: 399, vehicle_type: "sale" },
-  { id: 3, brand: "Toyota", model: "RAV4", year: 2024, mileage: 3300, price: null, rental_price: 299, vehicle_type: "rental" },
-  { id: 4, brand: "Renault", model: "Clio", year: 2025, mileage: 3000, price: null, rental_price: 199, vehicle_type: "rental" },
-  { id: 5, brand: "VW", model: "Golf", year: 2021, mileage: 34000, price: 15900, rental_price: null, vehicle_type: "sale" },
-  { id: 6, brand: "Peugeot", model: "308", year: 2023, mileage: 11000, price: 21500, rental_price: 349, vehicle_type: "sale" },
-  { id: 7, brand: "Renault", model: "Clio", year: 2026, mileage: 3000, price: null, rental_price: 189, vehicle_type: "rental" },
-  { id: 8, brand: "Toyota", model: "Yaris", year: 2024, mileage: 5000, price: null, rental_price: 229, vehicle_type: "rental" },
-];
-
 export default function Vehicles() {
   const [vehicles, setVehicles] = useState([]);
-  const [filter, setFilter] = useState(""); // "" | "sale" | "rental"
+  const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -74,7 +56,7 @@ export default function Vehicles() {
     const url = filter ? `/vehicles/?vehicle_type=${filter}` : "/vehicles/";
     API.get(url)
       .then((res) => setVehicles(res.data))
-      .catch(() => setVehicles(MOCK_VEHICLES))
+      .catch(() => setVehicles([]))
       .finally(() => setLoading(false));
   }, [filter]);
 
@@ -88,9 +70,10 @@ export default function Vehicles() {
     );
   });
 
+  const featured = vehicles.slice(0, 4);
+
   return (
     <div style={styles.page}>
-      {/* ── Search bar ── */}
       <div style={styles.searchSection}>
         <div style={styles.searchBox}>
           <input
@@ -103,10 +86,8 @@ export default function Vehicles() {
         </div>
       </div>
 
-      {/* ── Catalog header ── */}
       <h2 style={styles.sectionTitle}>NOTRE CATALOGUE COMPLET – ACHAT OU LOCATION</h2>
 
-      {/* ── Filter buttons ── */}
       <div style={styles.filterRow}>
         {[
           { label: "Tous", value: "" },
@@ -123,207 +104,51 @@ export default function Vehicles() {
         ))}
       </div>
 
-      {/* ── Grid ── */}
       {loading ? (
         <p style={{ textAlign: "center", color: "#888" }}>Chargement…</p>
       ) : displayed.length === 0 ? (
         <p style={{ textAlign: "center", color: "#888" }}>Aucun véhicule trouvé.</p>
       ) : (
         <div style={styles.grid}>
-          {displayed.map((v) => (
-            <VehicleCard key={v.id} v={v} />
-          ))}
+          {displayed.map((v) => <VehicleCard key={v.id} v={v} />)}
         </div>
       )}
 
-      {/* ── Featured section ── */}
-      <h2 style={{ ...styles.sectionTitle, marginTop: "48px" }}>
-        LES VÉHICULES DU MOMENT CHEZ M-MOTORS
-      </h2>
-      <div style={styles.grid}>
-        {MOCK_VEHICLES.slice(0, 4).map((v) => (
-          <VehicleCard key={"feat-" + v.id} v={v} />
-        ))}
-      </div>
+      {featured.length > 0 && (
+        <>
+          <h2 style={{ ...styles.sectionTitle, marginTop: "48px" }}>
+            LES VÉHICULES DU MOMENT CHEZ M-MOTORS
+          </h2>
+          <div style={styles.grid}>
+            {featured.map((v) => <VehicleCard key={"feat-" + v.id} v={v} />)}
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-/* ─────────────────────────── Styles ─────────────────────────── */
 const styles = {
-  page: {
-    backgroundColor: "#f0f0f0",
-    minHeight: "100vh",
-    padding: "24px 32px 64px",
-    fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif",
-  },
-
-  /* Search */
-  searchSection: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: "32px",
-  },
-  searchBox: {
-    display: "flex",
-    width: "100%",
-    maxWidth: "820px",
-    borderRadius: "40px",
-    overflow: "hidden",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-    backgroundColor: "#fff",
-  },
-  searchInput: {
-    flex: 1,
-    border: "none",
-    outline: "none",
-    padding: "16px 24px",
-    fontSize: "15px",
-    color: "#333",
-    backgroundColor: "transparent",
-  },
-  searchBtn: {
-    background: "#d0d0d0",
-    border: "none",
-    padding: "16px 28px",
-    fontWeight: "700",
-    fontSize: "14px",
-    letterSpacing: "1px",
-    cursor: "pointer",
-    borderRadius: "0 40px 40px 0",
-    color: "#222",
-    transition: "background 0.2s",
-  },
-
-  /* Section title */
-  sectionTitle: {
-    textAlign: "center",
-    fontWeight: "800",
-    fontSize: "22px",
-    letterSpacing: "1px",
-    color: "#111",
-    marginBottom: "20px",
-    textTransform: "uppercase",
-  },
-
-  /* Filter buttons */
-  filterRow: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "12px",
-    marginBottom: "24px",
-  },
-  filterBtn: {
-    padding: "8px 22px",
-    border: "2px solid #bbb",
-    borderRadius: "24px",
-    background: "#fff",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-    color: "#444",
-    transition: "all 0.2s",
-  },
-  filterBtnActive: {
-    padding: "8px 22px",
-    border: "2px solid #222",
-    borderRadius: "24px",
-    background: "#222",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-    color: "#fff",
-    transition: "all 0.2s",
-  },
-
-  /* Grid */
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
-    gap: "20px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-  },
-
-  /* Card */
-  card: {
-    background: "#fff",
-    borderRadius: "12px",
-    overflow: "hidden",
-    border: "1px solid #e0e0e0",
-    boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-    display: "flex",
-    flexDirection: "column",
-    transition: "box-shadow 0.2s, transform 0.2s",
-  },
-  imageWrapper: {
-    width: "100%",
-    height: "150px",
-    overflow: "hidden",
-    background: "#f5f5f5",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-  cardBody: {
-    padding: "12px 14px 14px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  cardTitle: {
-    fontWeight: "700",
-    fontSize: "15px",
-    color: "#111",
-  },
-  cardPrices: {
-    fontSize: "14px",
-    color: "#222",
-  },
-  priceTag: {
-    fontWeight: "700",
-  },
-  priceTagSecondary: {
-    fontWeight: "500",
-    color: "#555",
-  },
-  cardMeta: {
-    fontSize: "12px",
-    color: "#777",
-    marginBottom: "6px",
-  },
-  cardActions: {
-    display: "flex",
-    gap: "8px",
-    marginTop: "4px",
-  },
-  btnBuy: {
-    flex: 1,
-    padding: "7px 0",
-    background: "#111",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    transition: "background 0.2s",
-  },
-  btnRent: {
-    flex: 1,
-    padding: "7px 0",
-    background: "#fff",
-    color: "#111",
-    border: "2px solid #111",
-    borderRadius: "6px",
-    fontWeight: "600",
-    fontSize: "13px",
-    cursor: "pointer",
-    transition: "background 0.2s",
-  },
+  page: { backgroundColor: "#f0f0f0", minHeight: "100vh", padding: "24px 32px 64px", fontFamily: "'Segoe UI', Helvetica, Arial, sans-serif" },
+  searchSection: { display: "flex", justifyContent: "center", marginBottom: "32px" },
+  searchBox: { display: "flex", width: "100%", maxWidth: "820px", borderRadius: "40px", overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.12)", backgroundColor: "#fff" },
+  searchInput: { flex: 1, border: "none", outline: "none", padding: "16px 24px", fontSize: "15px", color: "#333", backgroundColor: "transparent" },
+  searchBtn: { background: "#d0d0d0", border: "none", padding: "16px 28px", fontWeight: "700", fontSize: "14px", letterSpacing: "1px", cursor: "pointer", borderRadius: "0 40px 40px 0", color: "#222" },
+  sectionTitle: { textAlign: "center", fontWeight: "800", fontSize: "22px", letterSpacing: "1px", color: "#111", marginBottom: "20px", textTransform: "uppercase" },
+  filterRow: { display: "flex", justifyContent: "center", gap: "12px", marginBottom: "24px" },
+  filterBtn: { padding: "8px 22px", border: "2px solid #bbb", borderRadius: "24px", background: "#fff", cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "#444" },
+  filterBtnActive: { padding: "8px 22px", border: "2px solid #222", borderRadius: "24px", background: "#222", cursor: "pointer", fontWeight: "600", fontSize: "14px", color: "#fff" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "20px", maxWidth: "1200px", margin: "0 auto" },
+  card: { background: "#fff", borderRadius: "12px", overflow: "hidden", border: "1px solid #e0e0e0", boxShadow: "0 1px 6px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column" },
+  imageWrapper: { width: "100%", height: "150px", overflow: "hidden", background: "#f5f5f5" },
+  cardImage: { width: "100%", height: "100%", objectFit: "cover" },
+  cardBody: { padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: "4px" },
+  cardTitle: { fontWeight: "700", fontSize: "15px", color: "#111" },
+  cardPrices: { fontSize: "14px", color: "#222" },
+  priceTag: { fontWeight: "700" },
+  cardMeta: { fontSize: "12px", color: "#777", marginBottom: "4px" },
+  cardDesc: { fontSize: "11px", color: "#999", marginBottom: "4px" },
+  cardActions: { display: "flex", gap: "8px", marginTop: "4px" },
+  btnBuy: { flex: 1, padding: "7px 0", background: "#111", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "600", fontSize: "13px", cursor: "pointer" },
+  btnRent: { flex: 1, padding: "7px 0", background: "#fff", color: "#111", border: "2px solid #111", borderRadius: "6px", fontWeight: "600", fontSize: "13px", cursor: "pointer" },
 };
