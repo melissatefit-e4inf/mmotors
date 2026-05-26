@@ -6,6 +6,7 @@ import enum
 class VehicleType(str, enum.Enum):
     sale = "sale"
     rental = "rental"
+    both = "both"
 
 
 class Vehicle(Base):
