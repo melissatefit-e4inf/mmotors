@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Vehicles from "./pages/Vehicles";
 import Dossiers from "./pages/Dossiers";
+import DepotDossier from "./pages/DepotDossier";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/dossiers" element={<Dossiers />} />
+          <Route path="/depot-dossier" element={<DepotDossier />} />
         </Routes>
       </div>
     </BrowserRouter>
