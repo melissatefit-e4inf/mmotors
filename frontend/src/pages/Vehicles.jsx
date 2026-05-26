@@ -1,4 +1,7 @@
+import { useState, useEffect } from "react";
+import API from "../api/client";
 import { useNavigate } from "react-router-dom";
+
 
 function VehicleCard({ v }) {
   const isRental = v.vehicle_type === "rental";
