@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 function VehicleCard({ v }) {
   const isRental = v.vehicle_type === "rental";
   const isSale = v.vehicle_type === "sale";
+  const isBoth   = v.vehicle_type === "both";
   const navigate = useNavigate();
 
   return (
@@ -37,22 +38,18 @@ function VehicleCard({ v }) {
           <div style={styles.cardDesc}>{v.description}</div>
         )}
         <div style={styles.cardActions}>
-          {isSale && (
-            <button
-              style={styles.btnBuy}
-              onClick={() => navigate("/depot-dossier", { state: { vehicle: v } })}
-            >
-              Acheter
+          {(isSale || isBoth) && (
+            <button style={styles.btnBuy}
+                onClick={() => navigate("/depot-dossier", { state: { vehicle: v, mode: "purchase" } })}>
+                Acheter
             </button>
-          )}
-          {isRental && (
-            <button
-              style={styles.btnRent}
-              onClick={() => navigate("/depot-dossier", { state: { vehicle: v } })}
-            >
-              Louer
+            )}
+            {(isRental || isBoth) && (
+            <button style={styles.btnRent}
+                onClick={() => navigate("/depot-dossier", { state: { vehicle: v, mode: "rental" } })}>
+                Louer
             </button>
-          )}
+            )}
         </div>
       </div>
     </div>
