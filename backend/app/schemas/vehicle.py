@@ -11,6 +11,7 @@ class VehicleCreate(BaseModel):
     fuel_type: str
     vehicle_type: VehicleType
     description: str | None = None
+    image_url: str | None = None
 
 
 class VehicleOut(BaseModel):
@@ -24,6 +25,7 @@ class VehicleOut(BaseModel):
     vehicle_type: VehicleType
     is_available: bool
     description: str | None = None
+    image_url: str | None = None
 
     model_config = {"from_attributes": True}
 

@@ -7,12 +7,13 @@ const CAR_PLACEHOLDER = (brand) =>
 function VehicleCard({ v }) {
   const isRental = v.vehicle_type === "rental";
   const isSale = v.vehicle_type === "sale";
+  
 
   return (
     <div style={styles.card}>
       <div style={styles.imageWrapper}>
         <img
-          src={v.image || CAR_PLACEHOLDER(`${v.brand} ${v.model}`)}
+          src={v.image_url || CAR_PLACEHOLDER(`${v.brand} ${v.model}`)}
           alt={`${v.brand} ${v.model}`}
           style={styles.cardImage}
           onError={(e) => {
@@ -25,21 +26,12 @@ function VehicleCard({ v }) {
           {v.brand} {v.model}
         </div>
         <div style={styles.cardPrices}>
-          {isSale && v.price && (
-            <span style={styles.priceTag}>€{Number(v.price).toLocaleString("fr-FR")}</span>
-          )}
-          {isRental && v.rental_price && (
-            <span style={styles.priceTag}>€{v.rental_price}/mois</span>
-          )}
-          {!isSale && !isRental && v.price && (
-            <>
-              <span style={styles.priceTag}>€{Number(v.price).toLocaleString("fr-FR")}</span>
-              {v.rental_price && (
-                <span style={styles.priceTagSecondary}> | €{v.rental_price}/mois</span>
-              )}
-            </>
-          )}
-        </div>
+            {v.vehicle_type === 'sale' ? (
+                <span style={styles.priceTag}>€{Number(v.price).toLocaleString('fr-FR')}</span>
+            ) : (
+                <span style={styles.priceTag}>€{v.price}/jour</span>
+            )}
+            </div>
         <div style={styles.cardMeta}>
           {v.year && <span>{v.year}</span>}
           {v.mileage && (

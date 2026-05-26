@@ -21,3 +21,4 @@ class Vehicle(Base):
     vehicle_type = Column(Enum(VehicleType), default=VehicleType.sale)
     is_available = Column(Boolean, default=True)
     description = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
