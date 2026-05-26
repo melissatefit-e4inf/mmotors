@@ -14,7 +14,8 @@ const CAR_PLACEHOLDER = (label) =>
 function Sidebar({ active }) {
   const items = [
     { label: "Tableau de bord", icon: "", href: "/admin" },
-    { label: "Dossiers",        icon: "", href: "/admin/dossiers" },
+    { label: "Dossiers",        icon: "📁", href: "/admin/dossiers" },
+    { label: "Dossiers", icon: "📁", href: "/admin" },
   ];
   return (
     <aside style={styles.sidebar}>

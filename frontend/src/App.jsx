@@ -13,13 +13,14 @@ function App() {
       <Navbar />
       <div style={{ padding: "0" }}>
         <Routes>
-          <Route path="/" element={<Navigate to="/vehicles" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/vehicles" element={<Vehicles />} />
-          <Route path="/dossiers" element={<Dossiers />} />
+          <Route path="/"              element={<Navigate to="/vehicles" />} />
+          <Route path="/login"         element={<Login />} />
+          <Route path="/register"      element={<Register />} />
+          <Route path="/vehicles"      element={<Vehicles />} />
+          <Route path="/dossiers"      element={<Dossiers />} />
           <Route path="/depot-dossier" element={<DepotDossier />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin"         element={<Admin />} />
+          <Route path="/admin/dossiers" element={<Admin />} />
         </Routes>
       </div>
     </BrowserRouter>
