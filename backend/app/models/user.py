@@ -15,5 +15,5 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=False)
-    role = Column(Enum(UserRole), default=UserRole.client, nullable=False)
+    role = Column(Enum(UserRole, native_enum=False), default=UserRole.client, nullable=False)
     is_active = Column(Boolean, default=True)

@@ -7,7 +7,16 @@ from app.main import app
 from app.core.database import Base, get_db
 
 SQLALCHEMY_TEST_URL = "sqlite:///./test_temp.db"
+from sqlalchemy import event
+
 engine = create_engine(SQLALCHEMY_TEST_URL, connect_args={"check_same_thread": False})
+
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.close()
+    
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

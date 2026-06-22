@@ -19,7 +19,7 @@ class Vehicle(Base):
     mileage = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
     fuel_type = Column(String, nullable=False)
-    vehicle_type = Column(Enum(VehicleType), default=VehicleType.sale)
+    vehicle_type = Column(Enum(VehicleType, native_enum=False), default=VehicleType.sale)
     is_available = Column(Boolean, default=True)
     description = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
