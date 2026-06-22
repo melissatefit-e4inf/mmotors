@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import API from "../api/client";
 import { useNavigate } from "react-router-dom";
 
+const CAR_PLACEHOLDER = (brand) =>
+  `https://via.placeholder.com/300x180/e8e8e8/999999?text=${encodeURIComponent(brand)}`;
 
 function VehicleCard({ v }) {
   const isRental = v.vehicle_type === "rental";
   const isSale = v.vehicle_type === "sale";
-  const isBoth   = v.vehicle_type === "both";
+  const isBoth = v.vehicle_type === "both";
   const navigate = useNavigate();
 
   return (
@@ -40,16 +42,16 @@ function VehicleCard({ v }) {
         <div style={styles.cardActions}>
           {(isSale || isBoth) && (
             <button style={styles.btnBuy}
-                onClick={() => navigate("/depot-dossier", { state: { vehicle: v, mode: "purchase" } })}>
-                Acheter
+              onClick={() => navigate("/depot-dossier", { state: { vehicle: v, mode: "purchase" } })}>
+              Acheter
             </button>
-            )}
-            {(isRental || isBoth) && (
+          )}
+          {(isRental || isBoth) && (
             <button style={styles.btnRent}
-                onClick={() => navigate("/depot-dossier", { state: { vehicle: v, mode: "rental" } })}>
-                Louer
+              onClick={() => navigate("/depot-dossier", { state: { vehicle: v, mode: "rental" } })}>
+              Louer
             </button>
-            )}
+          )}
         </div>
       </div>
     </div>
