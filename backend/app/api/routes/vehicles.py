@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
+from app.core.dependencies import get_current_user, require_admin
 from app.models.vehicle import Vehicle
+from app.models.user import User
 from app.schemas.vehicle import VehicleCreate, VehicleOut, VehicleUpdate
 
 router = APIRouter(prefix="/vehicles", tags=["vehicles"])
@@ -26,7 +28,11 @@ def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=VehicleOut, status_code=201)
-def create_vehicle(vehicle_in: VehicleCreate, db: Session = Depends(get_db)):
+def create_vehicle(
+    vehicle_in: VehicleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
     vehicle = Vehicle(**vehicle_in.model_dump())
     db.add(vehicle)
     db.commit()
@@ -36,7 +42,10 @@ def create_vehicle(vehicle_in: VehicleCreate, db: Session = Depends(get_db)):
 
 @router.patch("/{vehicle_id}/type", response_model=VehicleOut)
 def update_vehicle_type(
-    vehicle_id: int, update: VehicleUpdate, db: Session = Depends(get_db)
+    vehicle_id: int,
+    update: VehicleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
@@ -48,7 +57,11 @@ def update_vehicle_type(
 
 
 @router.delete("/{vehicle_id}", status_code=204)
-def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+def delete_vehicle(
+    vehicle_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Véhicule non trouvé")
