@@ -1,28 +1,47 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+.Python
+env/
+venv/
 .venv/
-.env
-.coverage
-htmlcov/
 
-# Node
+# Tests
+.coverage*
+htmlcov/
+.pytest_cache/
+
+# Secrets
+.env
+backend/.env
+secret.py
+backend/app/core/secret.py
+
+# Bases de données
+*.db
+
+# Uploads
+uploads_justificatifs/
+
+# Scripts locaux
+backend/seed.py
+
+# Frontend
 node_modules/
 dist/
 build/
+.npm
+.eslintcache
 
 # IDE
 .vscode/
 .idea/
+*.swp
 
-# OS
+# Système
 .DS_Store
+Thumbs.db
 
 # Exports
 exports/
 *.pdf
-*.db
-test_temp.db
-backend/seed.py
-backend/.env
-backend/*.db
