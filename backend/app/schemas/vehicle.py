@@ -31,4 +31,4 @@ class VehicleOut(BaseModel):
 
 
 class VehicleUpdate(BaseModel):
-    vehicle_type: VehicleType
+    vehicle_type: VehicleType | None = None

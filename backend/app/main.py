@@ -9,12 +9,15 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.api.routes import auth, vehicles, dossiers
 
-sentry_sdk.init(
-    dsn="https://ad080565ed89746281b7f83d1e4962b3@o4511453817274368.ingest.de.sentry.io/4511453829398608",
-    send_default_pii=True,
-    enable_logs=True,
-    traces_sample_rate=1.0,
-)
+
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        send_default_pii=False,
+        enable_logs=True,
+        traces_sample_rate=1.0,
+    )
+
 
 limiter = Limiter(key_func=get_remote_address)
 
