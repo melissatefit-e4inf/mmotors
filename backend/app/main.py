@@ -1,5 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+
 import sentry_sdk
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -43,6 +46,12 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+
+app.mount(
+    "/uploads_justificatifs",
+    StaticFiles(directory="uploads_justificatifs"),
+    name="uploads_justificatifs"
+)
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
