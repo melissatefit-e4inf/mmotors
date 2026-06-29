@@ -25,3 +25,4 @@ exports/
 test_temp.db
 backend/seed.py
 backend/.env
+backend/*.db
