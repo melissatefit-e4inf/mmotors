@@ -74,14 +74,28 @@ export default function DepotDossier() {
   };
 
   const uploadDocuments = async (dossierId) => {
-    const formData = new FormData();
-
-    formData.append("id_card", idCard);
-    formData.append("proof_of_address", proofOfAddress);
-    formData.append("income_proof", incomeProof);
-
-    await API.patch(`/dossiers/${dossierId}/documents`, formData);
-  };
+  if (idCard) {
+    const fd1 = new FormData();
+    fd1.append("file", idCard);
+    await API.post(`/dossiers/${dossierId}/upload-id-card`, fd1, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+  }
+  if (proofOfAddress) {
+    const fd2 = new FormData();
+    fd2.append("file", proofOfAddress);
+    await API.post(`/dossiers/${dossierId}/upload-address`, fd2, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+  }
+  if (incomeProof) {
+    const fd3 = new FormData();
+    fd3.append("file", incomeProof);
+    await API.post(`/dossiers/${dossierId}/upload-income`, fd3, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+  }
+};
 
   const handleSubmit = async (event) => {
     event.preventDefault();
