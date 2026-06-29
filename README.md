@@ -1,10 +1,9 @@
-# M-Motors — Plateforme d'Achat & Location Longue Durée (Bloc 3)
-
+# M-Motors Plateforme d'Achat & Location Longue Durée 
 Bienvenue sur le dépôt officiel du projet de refonte applicative de **M-Motors**.
 
 ---
 
-## 🚀 Liens de Déploiement et Accès
+##  Liens de Déploiement et Accès
 
 | Ressource | URL / Identifiants |
 | :--- | :--- |
@@ -16,7 +15,7 @@ Bienvenue sur le dépôt officiel du projet de refonte applicative de **M-Motors
 
 ---
 
-## 🛠️ Stack Technique
+##  Stack Technique
 
 - **Back-End :** Python 3.11+ avec FastAPI
 - **Front-End :** React 18 + Vite
@@ -27,7 +26,7 @@ Bienvenue sur le dépôt officiel du projet de refonte applicative de **M-Motors
 
 ---
 
-## 🛡️ Sécurité
+##  Sécurité
 
 - JWT obligatoire sur toutes les routes sensibles
 - Séparation rôles admin/client (403 Forbidden)
@@ -40,7 +39,7 @@ Bienvenue sur le dépôt officiel du projet de refonte applicative de **M-Motors
 
 ---
 
-## 📦 Installation locale
+##  Installation locale
 
 ### Back-End
 ```bash
@@ -67,7 +66,7 @@ python -m pytest tests/ -v --cov=app --cov-report=term-missing
 
 ---
 
-## 🌿 GitFlow
+##  GitFlow
 
 - `main` → production, déployée sur Render
 - `develop` → intégration
